@@ -6,7 +6,7 @@ public class Main {
         System.out.println(x);
         System.out.println("Hello world");
         int y = 200;
-        System.out.println(x+y);
+        System.out.println(x + y);
         System.out.println("Hello world");
         int z = 300;
         int sum = y + z;
@@ -15,5 +15,8 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         String name = scanner.nextLine();
         System.out.println("Hello " + name);
+
+
     }
+
 }
