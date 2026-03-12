@@ -68,12 +68,6 @@ public class Game {
                     System.out.println(rightBlock);
                 }
                 System.out.println(wall);
-                System.out.println(wall);
-                for (String[] raw : board) {
-                    for (String col : raw) {
-
-                    }
-                }
                 //  логика хода
 
                 System.out.println("Введите куда будет ходить персонаж(ход возможен только по вертикали и горизонтали на одну клетку; ");
@@ -94,8 +88,40 @@ public class Game {
                         System.out.println("Вы прошли игру");
                         break;
                     } else {
-                        System.out.println("Решите задачу.");
-                        break;
+
+                        Random r = new Random();
+                       int a = r.nextInt(300);
+                       int b = r.nextInt(300);
+                        int trueAnswer = a + b;
+                        System.out.println("Реши пример: " + a + " + " + b + " = ?");
+                        Scanner sc = new Scanner(System.in);
+                        int ans = sc.nextInt();
+                        if (trueAnswer == ans) {
+                            System.out.println("Верно! Ты победил монстра");
+                            personX = x;
+                            personY = y;
+
+                        } else {
+                            personeLive--;
+                            if (personeLive <= 0) {
+                                a = r.nextInt(400);
+                                b = r.nextInt(400);
+                                trueAnswer = x + y;
+                                System.out.println("Реши пример: " + a + " + " + b + " = ?");
+                                ans = sc.nextInt();
+                                if (trueAnswer == ans) {
+                                    System.out.println("Верно! Ты победил монстра");
+                                    personX = x;
+                                    personY = y;
+                                    personeLive++;
+                                } else {
+                                    System.out.println("Ты проиграл эту битву!");
+                                    break;
+                                }
+
+                            }
+                        }
+
                     }
                 } else {
                     System.out.println("Координаты не изменены");
@@ -111,4 +137,10 @@ public class Game {
             System.out.println("Закончились жизни. Итог: ...");
         }
     }
+
+    static void taskMonster() {
+
+    }
+
 }
+
