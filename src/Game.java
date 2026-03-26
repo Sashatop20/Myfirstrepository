@@ -8,12 +8,13 @@ public class Game {
         int step = 0;
         int sizeBoard = 5;
 
-        Person person = new Person();
-        Random r = new Random();
-        int n = r.nextInt(sizeBoard);
-        person.x = n == 0 ? 1 : n;
-        person.y = sizeBoard;
-        String monster = "Мм";
+
+        Person person = new Person(sizeBoard);
+//        Monster monster = new Monster(sizeBoard);
+//        monster.taskMonster(4);
+//
+//        monster = new BigMonster(2,2);
+//        monster.taskMonster(4);
         String castle = "\uD83C\uDFF0";
         int castleY = 1;
         Random random = new Random();
@@ -23,7 +24,6 @@ public class Game {
         String wall = " + —— + —— + —— + —— + —— + ";
         String begin = "|   | |";
         String end = "|   |";
-        String full = begin + monster + end; // |   | Мм |   |
         System.out.println("Привет! Ты готов начать играть в игру? (Напиши: ДА или НЕТ)");
         System.out.println("Количество жизней: " + person.live);
         Scanner scanner = new Scanner(System.in);
@@ -42,14 +42,28 @@ public class Game {
             }
 
             int count_monster = sizeBoard * sizeBoard - sizeBoard - 1;
-
-            for (int i = 0; i <= count_monster; i++) {
-                board[random.nextInt(sizeBoard - 1)][random.nextInt(sizeBoard)] = monster;
+            Monster[] arrMonster = new Monster[count_monster + 1];
+            int count = 0;
+            Monster test;
+            while (count <= count_monster) {
+                int z = random.nextInt(3);
+                if (z == 0) {
+                    test = new Monster(sizeBoard);
+                } else if (z == 1){
+                    test = new BigMonster(sizeBoard);
+                }else{
+                    test = new MegaMonster(sizeBoard);
+                }
+                if (board[test.getY() - 1][test.getX() - 1].equals("  ")) {
+                    board[test.getY() - 1][test.getX() - 1] = test.getImage();
+                    arrMonster[count] = test;
+                    count++;
+                }
             }
             board[castleY - 1][castleX - 1] = castle;
 
-            while ((personLive > 0) && !(castleX == personX && castleY == personY)) {
-                board[personY - 1][personX - 1] = person;
+            while ((person.live > 0) && !(castleX == person.getX() && castleY == person.getY())) {
+                board[person.getY() - 1][person.getX() - 1] = person.getImage();
                 for (int y = 1; y <= sizeBoard; y++) {
                     System.out.println(wall);
                     for (int x = 1; x <= sizeBoard; x++) {
@@ -63,39 +77,39 @@ public class Game {
                 //  логика хода
 
                 System.out.println("Введите куда будет ходить персонаж(ход возможен только по вертикали и горизонтали на одну клетку; ");
-                System.out.println("Координаты персонажа - (x:" + personX + "+ y: " + personY + "))");
+                System.out.println("Координаты персонажа - (x:" + person.getX() + "+ y: " + person.getY() + "))");
                 int x = scanner.nextInt();
                 int y = scanner.nextInt();
-
-                if (x != personX && y != personY) {
-                    System.out.println("Неккоректный ход");
-                } else if (Math.abs(x - personX) == 1 || Math.abs(y - personY) == 1) {
-                    if (board[personY - 1][personX - 1].equals("  ")) {
-                        personX = x;
-                        personY = y;
-                        step += 1;
-                        System.out.println("Ход корректный; Новые координаты: " +
-                                personX + ", " + personY + "\nХод номер: " + step);
-                    } else if (board[personY - 1][personX - 1].equals(castle)) {
-                        System.out.println("Вы прошли игру");
+                if (person.isMoveCorrect(x, y)) {
+                    String next = board[y - 1][x - 1];
+                    if (next.equals("  ")) {
+                        board[person.getY() - 1][person.getX() - 1] = "  ";
+                        person.move(x, y);
+                        step++;
+                        System.out.println("Ход корректный; Новые координаты: " + person.getX() + ", " + person.getY() +
+                                "\\nХод номер: " + step);
+                    } else if (next.equals(castle)) {
+                        System.out.println("Вы прошли игру!");
                         break;
+
                     } else {
-
-
                         System.out.println("Решите задачу:");
-                        if (taskMonster(difficultGame)) {
-                            board[personY - 1][personX - 1] = " ";
-                            personX = x;
-                            personY = y;
-                        } else {
-                            personLive--;
+                        for (Monster monster : arrMonster) {
+                            if (monster.conflictPerson(x, y)) {
+                                if (monster.taskMonster(sizeBoard)) {
+                                    board[person.getX() - 1][person.getY() - 1] = "  ";
+                                    person.move(x, y);
+
+                                } else {
+                                    person.downLive();
+                                }
+                                break;
+                            }
                         }
                     }
-
                 } else {
-                    System.out.println("Координаты не изменены");
+                    System.out.println("Некорректный ход");
                 }
-                //конец
             }
         } else if (answer.equals("НЕТ")) {
 
@@ -106,90 +120,4 @@ public class Game {
             System.out.println("Закончились жизни. Итог: ...");
         }
     }
-
-    private static boolean taskMonster(int key) {
-        if (key == 1) {
-            Random r = new Random();
-            int x = r.nextInt(100);
-            int y = r.nextInt(100);
-            int trueAnswer = x + y;
-            System.out.println("Реши пример: " + x + " + " + y + " = ?");
-            Scanner sc = new Scanner(System.in);
-            int ans = sc.nextInt();
-            if (trueAnswer == ans) {
-                System.out.println("Верно! Ты победил монстра");
-                return true;
-            }
-            System.out.println("Ты проиграл эту битву!");
-            return false;
-        } else if (key == 2) {
-            Random r = new Random();
-            int x = r.nextInt(200);
-            int y = r.nextInt(200);
-            int trueAnswer = x + y;
-            System.out.println("Реши пример: " + x + " + " + y + " = ?");
-            Scanner sc = new Scanner(System.in);
-            int ans = sc.nextInt();
-            if (trueAnswer == ans) {
-                System.out.println("Верно! Ты победил монстра");
-                return true;
-            }
-            System.out.println("Ты проиграл эту битву!");
-            return false;
-        } else {
-            if (key == 3) {
-                Random r = new Random();
-                int x = r.nextInt(300);
-                int y = r.nextInt(300);
-                int trueAnswer = x + y;
-                System.out.println("Реши пример: " + x + " + " + y + " = ?");
-                Scanner sc = new Scanner(System.in);
-                int ans = sc.nextInt();
-                if (trueAnswer == ans) {
-                    System.out.println("Верно! Ты победил монстра");
-                    return true;
-                }
-                System.out.println("Ты проиграл эту битву!");
-                return false;
-            } else {
-                if (key == 4) {
-                    Random r = new Random();
-                    int x = r.nextInt(400);
-                    int y = r.nextInt(400);
-                    int trueAnswer = x + y;
-                    System.out.println("Реши пример: " + x + " + " + y + " = ?");
-                    Scanner sc = new Scanner(System.in);
-                    int ans = sc.nextInt();
-                    if (trueAnswer == ans) {
-                        System.out.println("Верно! Ты победил монстра");
-                        return true;
-                    }
-                    System.out.println("Ты проиграл эту битву!");
-                    return false;
-                } else {
-                    if (key == 5) {
-                        Random r = new Random();
-                        int x = r.nextInt(500);
-                        int y = r.nextInt(500);
-                        int trueAnswer = x + y;
-                        System.out.println("Реши пример: " + x + " + " + y + " = ?");
-                        Scanner sc = new Scanner(System.in);
-                        int ans = sc.nextInt();
-                        if (trueAnswer == ans) {
-                            System.out.println("Верно! Ты победил монстра");
-                            return true;
-                        }
-                        System.out.println("Ты проиграл эту битву!");
-                        return false;
-                    } else {
-                    }
-                }
-            }
-        }
-        return false;
-    }
 }
-
-
-
-
